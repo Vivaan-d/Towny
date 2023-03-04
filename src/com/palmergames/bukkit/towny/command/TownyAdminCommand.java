@@ -2077,26 +2077,30 @@ public class TownyAdminCommand extends BaseCommand implements CommandExecutor {
 			TownySettings.loadNationLevelConfig(); // but later so the config-migrator can do it's work on them if needed.
 			Translation.loadTranslationRegistry();
 			TownBlockTypeHandler.initialize();
-		} catch (IOException e) {
+
+			TownyMessaging.sendMsg(sender, Translatable.of("msg_reloaded_config"));
+			plugin.removeError(TownyInitException.TownyError.MAIN_CONFIG);
+			plugin.removeError(TownyInitException.TownyError.LOCALIZATION);
+		} catch (IOException | TownyInitException e) {
 			TownyMessaging.sendErrorMsg(sender, Translatable.of("msg_reload_error"));
 			e.printStackTrace();
-			return;
+			
+			if (e instanceof TownyInitException tie)
+				plugin.addError(tie.getError());
 		}
 		
-		TownyMessaging.sendMsg(sender, Translatable.of("msg_reloaded_config"));
 	}
 
 	/**
 	 * Reloads both the database and the config. Used with a database reload command.
-	 *
 	 */
 	public void reloadDatabase(CommandSender sender) {
 		TownyUniverse.getInstance().getDataSource().finishTasks();
 		try {
 			plugin.loadFoundation(true);
 		} catch (TownyInitException tie) {
-			TownyMessaging.sendErrorMsg(tie.getMessage());
-			
+			TownyMessaging.sendErrorMsg(sender, tie.getMessage());
+			tie.printStackTrace();
 			plugin.addError(tie.getError());
 			return;
 		}

@@ -45,7 +45,6 @@ public class PluginIntegrations {
 	private LuckPermsContexts luckPermsContexts;
 	private boolean citizens2 = false;
 	private NamespacedKey eliteKey;
-	private boolean economySetUp = false;
 
 	public static PluginIntegrations getInstance() {
 		if (instance == null)
@@ -354,10 +353,6 @@ public class PluginIntegrations {
 
 	private boolean isEliteMobsPresent() {
 		return eliteKey != null;
-	}
-	
-	public boolean isEconomySetUp() {
-		return this.economySetUp;
 	}
 }
 

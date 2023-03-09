@@ -72,7 +72,8 @@ public class SQL_Schema {
 	private static String fetchTableSchema(TownyDBTableType tableType) {
 		return switch(tableType) {
 		case TOWNBLOCK -> tryCreateTownBlocksTable();
-		case JAIL, PLOTGROUP -> tryCreateUUIDKeyedTable(tableType);
+		case JAIL -> tryCreateUUIDKeyedTable(tableType);
+		case PLOTGROUP -> tryCreatePlotGroupKeyedTable(tableType);
 		default -> tryCreateNameKeyedTable(tableType);
 		};
 	}
@@ -82,6 +83,13 @@ public class SQL_Schema {
 	 */
 	private static String tryCreateNameKeyedTable(TownyDBTableType tableType) {
 		return "CREATE TABLE IF NOT EXISTS " + TABLE_PREFIX + tableType.tableName() + " (`name` VARCHAR(32) NOT NULL,PRIMARY KEY (`name`))";
+	}
+
+	/*
+	 * Create table statement for the PlotGroups that originally got keyed with groupID
+	 */
+	private static String tryCreatePlotGroupKeyedTable(TownyDBTableType tableType) {
+		return "CREATE TABLE IF NOT EXISTS " + TABLE_PREFIX + tableType.tableName() + " (`groupID` VARCHAR(36) NOT NULL,PRIMARY KEY (`groupID`))";
 	}
 
 	/*

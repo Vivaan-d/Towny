@@ -478,10 +478,10 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 
 		return true;
 	}
-
+	
 	public enum TownyDBTableType {
 		JAIL("JAILS", "SELECT uuid FROM ", "uuid"),
-		PLOTGROUP("PLOTGROUPS", "SELECT groupID FROM ", "uuid"),
+		PLOTGROUP("PLOTGROUPS", "SELECT groupID FROM ", "groupID"),
 		RESIDENT("RESIDENTS", "SELECT name FROM ", "name"),
 		HIBERNATED_RESIDENT("HIBERNATEDRESIDENTS", "", "uuid"),
 		TOWN("TOWNS", "SELECT name FROM ", "name"),

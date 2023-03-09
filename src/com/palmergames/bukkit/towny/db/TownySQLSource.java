@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
@@ -156,7 +157,7 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 		/*
 		 * Initialise database Schema.
 		 */
-		SQL_Schema.initTables(cntx, db_name);
+		SQL_Schema.initTables(cntx);
 
 		/*
 		 * Start our Async queue for pushing data to the database.
@@ -473,11 +474,49 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 		if (!getContext())
 			return false;
 
-		SQL_Schema.cleanup(cntx, db_name);
+		SQL_Schema.cleanup(cntx);
 
 		return true;
 	}
-	
+
+	public enum TownyDBTableType {
+		JAIL("JAILS", "SELECT uuid FROM ", "uuid"),
+		PLOTGROUP("PLOTGROUPS", "SELECT groupID FROM ", "uuid"),
+		RESIDENT("RESIDENTS", "SELECT name FROM ", "name"),
+		HIBERNATED_RESIDENT("HIBERNATEDRESIDENTS", "", "uuid"),
+		TOWN("TOWNS", "SELECT name FROM ", "name"),
+		NATION("NATIONS", "SELECT name FROM ", "name"),
+		WORLD("WORLDS", "SELECT name FROM ", "name"),
+		TOWNBLOCK("TOWNBLOCKS", "SELECT world,x,z FROM ", "name");
+		
+		private String tableName;
+		private String queryString;
+		private String primaryKey;
+
+		TownyDBTableType(String tableName, String queryString, String primaryKey) {
+			this.tableName = tableName;
+			this.queryString = queryString;
+			this.primaryKey = primaryKey;
+		}
+		
+		public String tableName() {
+			return tableName;
+		}
+		
+		private String getSingular() {
+			// Hibernated Residents are never loaded so this method is never called on them.
+			return tableName.substring(0, tableName.length()-1).toLowerCase(Locale.ROOT);
+		}
+		
+		public String getSaveLocation(String rowKeyName) {
+			return TownySettings.getSQLTablePrefix() + tableName + File.separator + rowKeyName;
+		}
+		
+		public String getLoadErrorMsg(UUID uuid) {
+			return "Loading Error: Could not read the " + getSingular() + " with UUID '" + uuid + "' from the " + tableName + " table.";
+		}
+	}
+
 	/*
 	 * Load keys
 	 */

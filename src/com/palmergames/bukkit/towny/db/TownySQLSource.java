@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
 
 public final class TownySQLSource extends TownyDatabaseHandler {
 
-	private final Queue<SQL_Task> queryQueue = new ConcurrentLinkedQueue<>();
+	private final Queue<SQLTask> queryQueue = new ConcurrentLinkedQueue<>();
 	private boolean isPolling = false;
 	private BukkitTask task = null;
 
@@ -157,7 +157,7 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 		/*
 		 * Initialise database Schema.
 		 */
-		SQL_Schema.initTables(cntx);
+		SQLSchema.initTables(cntx);
 
 		/*
 		 * Start our Async queue for pushing data to the database.
@@ -170,7 +170,7 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 			try {
 				while (!TownySQLSource.this.queryQueue.isEmpty()) {
 
-					final SQL_Task query = TownySQLSource.this.queryQueue.poll();
+					final SQLTask query = TownySQLSource.this.queryQueue.poll();
 					if (query == null)
 						break;
 
@@ -195,7 +195,7 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 
 		// Make sure that *all* tasks are saved before shutting down.
 		while (!queryQueue.isEmpty()) {
-			SQL_Task query = TownySQLSource.this.queryQueue.poll();
+			SQLTask query = TownySQLSource.this.queryQueue.poll();
 
 			if (query.update) {
 				TownySQLSource.this.QueueUpdateDB(query.tb_name, query.args, query.keys);
@@ -260,7 +260,7 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 		 * Make sure we only execute queries in async
 		 */
 
-		this.queryQueue.add(new SQL_Task(tb_name, args, keys));
+		this.queryQueue.add(new SQLTask(tb_name, args, keys));
 
 		return true;
 
@@ -425,7 +425,7 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 
 		// Make sure we only execute queries in async
 
-		this.queryQueue.add(new SQL_Task(tb_name, args));
+		this.queryQueue.add(new SQLTask(tb_name, args));
 
 		return true;
 
@@ -474,7 +474,7 @@ public final class TownySQLSource extends TownyDatabaseHandler {
 		if (!getContext())
 			return false;
 
-		SQL_Schema.cleanup(cntx);
+		SQLSchema.cleanup(cntx);
 
 		return true;
 	}

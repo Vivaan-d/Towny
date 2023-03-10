@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * @author ElgarL
  */
-public class SQL_Schema {
+public class SQLSchema {
 
 	private static final String SQLDB_NAME = TownySettings.getSQLDBName();
 	private static final String TABLE_PREFIX = TownySettings.getSQLTablePrefix().toUpperCase();
@@ -369,7 +369,7 @@ public class SQL_Schema {
 		private String column;
 
 		private ColumnUpdate(String table, String column) {
-			this.table = SQL_Schema.TABLE_PREFIX + table;
+			this.table = SQLSchema.TABLE_PREFIX + table;
 			this.column = column;
 		}
 

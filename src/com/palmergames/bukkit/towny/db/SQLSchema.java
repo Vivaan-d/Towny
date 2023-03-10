@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author ElgarL
@@ -19,7 +20,8 @@ import java.util.List;
 public class SQLSchema {
 
 	private static final String SQLDB_NAME = TownySettings.getSQLDBName();
-	private static final String TABLE_PREFIX = TownySettings.getSQLTablePrefix().toUpperCase();
+	private static final String TABLE_PREFIX = TownySettings.getSQLTablePrefix().toUpperCase(Locale.ROOT);
+	private static final int MYSQL_DUPLICATE_COLUMN_ERR = 1060;
 
 	/**
 	 * Create and update database schema.
@@ -71,38 +73,38 @@ public class SQLSchema {
 	 */
 	private static String fetchTableSchema(TownyDBTableType tableType) {
 		return switch(tableType) {
-		case TOWNBLOCK -> tryCreateTownBlocksTable();
-		case JAIL -> tryCreateUUIDKeyedTable(tableType);
-		case PLOTGROUP -> tryCreatePlotGroupKeyedTable(tableType);
-		default -> tryCreateNameKeyedTable(tableType);
+		case TOWNBLOCK -> fetchCreateTownBlocksStatement();
+		case JAIL -> fetchCreateUUIDStatement(tableType);
+		case PLOTGROUP -> fetchCreatePlotGroupStatement(tableType);
+		default -> fetchCreateNamedStatement(tableType);
 		};
 	}
 
 	/*
 	 * Generic create table statement for the Name keyed TownyDBTableTypes
 	 */
-	private static String tryCreateNameKeyedTable(TownyDBTableType tableType) {
+	private static String fetchCreateNamedStatement(TownyDBTableType tableType) {
 		return "CREATE TABLE IF NOT EXISTS " + TABLE_PREFIX + tableType.tableName() + " (`name` VARCHAR(32) NOT NULL,PRIMARY KEY (`name`))";
 	}
 
 	/*
 	 * Create table statement for the PlotGroups that originally got keyed with groupID
 	 */
-	private static String tryCreatePlotGroupKeyedTable(TownyDBTableType tableType) {
+	private static String fetchCreatePlotGroupStatement(TownyDBTableType tableType) {
 		return "CREATE TABLE IF NOT EXISTS " + TABLE_PREFIX + tableType.tableName() + " (`groupID` VARCHAR(36) NOT NULL,PRIMARY KEY (`groupID`))";
 	}
 
 	/*
 	 * Generic create table statement for the UUID keyed TownyDBTableTypes
 	 */
-	private static String tryCreateUUIDKeyedTable(TownyDBTableType tableType) {
+	private static String fetchCreateUUIDStatement(TownyDBTableType tableType) {
 		return "CREATE TABLE IF NOT EXISTS " + TABLE_PREFIX + tableType.tableName() + " (`uuid` VARCHAR(36) NOT NULL,PRIMARY KEY (`uuid`))";
 	}
 
 	/*
 	 * Special create table statement for the TownBlock TownyDBTableType
 	 */
-	private static String tryCreateTownBlocksTable() {
+	private static String fetchCreateTownBlocksStatement() {
 		return "CREATE TABLE IF NOT EXISTS " + TABLE_PREFIX + "TOWNBLOCKS (`world` VARCHAR(36) NOT NULL,`x` mediumint NOT NULL,`z` mediumint NOT NULL,PRIMARY KEY (`world`,`x`,`z`))";
 	}
 
@@ -116,7 +118,7 @@ public class SQLSchema {
 				PreparedStatement ps = cntx.prepareStatement(update + column);
 				ps.executeUpdate();
 			} catch (SQLException ee) {
-				if (ee.getErrorCode() != 1060)
+				if (ee.getErrorCode() != MYSQL_DUPLICATE_COLUMN_ERR)
 					TownyMessaging.sendErrorMsg("Error updating table " + tableType.tableName() + ":" + ee.getMessage());
 			}
 		}
@@ -359,7 +361,7 @@ public class SQLSchema {
 			TownyMessaging.sendDebugMsg("Table " + table + " has dropped the " + column + " column.");
 
 		} catch (SQLException ee) {
-			if (ee.getErrorCode() != 1060)
+			if (ee.getErrorCode() != MYSQL_DUPLICATE_COLUMN_ERR)
 				TownyMessaging.sendErrorMsg("Error updating table " + table + ":" + ee.getMessage());
 		}
 	}

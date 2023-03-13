@@ -161,6 +161,7 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 		"add",
 		"kick",
 		"spawn",
+		"takeoverclaim",
 		"claim",
 		"unclaim",
 		"withdraw",
@@ -773,6 +774,11 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 			checkPermOrThrow(player, PermissionNodes.TOWNY_COMMAND_TOWN_UNCLAIM.getNode());
 			catchRuinedTown(player);
 			parseTownUnclaimCommand(player, StringMgmt.remFirstArg(split));
+			break;
+		case "takeoverclaim":
+			checkPermOrThrow(player, PermissionNodes.TOWNY_COMMAND_TOWN_TAKEOVERCLAIM.getNode());
+			catchRuinedTown(player);
+			parseTownTakeoverClaimCommand(player);
 			break;
 		case "online":
 			checkPermOrThrow(player, PermissionNodes.TOWNY_COMMAND_TOWN_ONLINE.getNode());
@@ -3874,6 +3880,54 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 		Bukkit.getScheduler().runTask(plugin, new TownClaim(plugin, player, town, selection, false, false, false));
 	}
 	
+
+	private void parseTownTakeoverClaimCommand(Player player) throws TownyException {
+		if (!TownySettings.isOverClaimingAllowingStolenLand())
+			throw new TownyException(Translatable.of("msg_err_taking_over_claims_is_not_enabled"));
+
+		Town town = TownyAPI.getInstance().getTown(player);
+		if (town == null)
+			throw new TownyException(Translatable.of("msg_err_must_belong_town"));
+
+		// Make sure this wouldn't end up becoming a homeblock.
+		if (town.getTownBlocks().size() == 0)
+			throw new TownyException(Translatable.of("msg_err_you_cannot_make_this_your_homeblock"));
+
+		WorldCoord wc = WorldCoord.parseWorldCoord(player);
+		if (TownyAPI.getInstance().isWilderness(wc))
+			throw new TownyException(Translatable.of("msg_not_own_place"));
+
+		if (wc.getTownOrNull().hasResident(player))
+			throw new TownyException(Translatable.of("msg_already_claimed_1"));
+
+		if (!wc.canBeStolen())
+			throw new TownyException(Translatable.of("msg_err_this_townblock_cannot_be_taken_over"));
+
+		// Not enough available claims.
+		if (!town.hasUnlimitedClaims() && 1 > town.availableTownBlocks())
+			throw new TownyException(Translatable.of("msg_err_not_enough_blocks"));
+
+		if (!isEdgeBlock(town, wc))
+			throw new TownyException(Translatable.of("msg_err_not_attached_edge"));
+
+		// Prevent straight line claims if configured, and the town has enough townblocks claimed, and this is not an outpost.
+		int minAdjacentBlocks = TownySettings.getMinAdjacentBlocks();
+		if (minAdjacentBlocks > 0 && town.getTownBlocks().size() > minAdjacentBlocks) {
+			// Only consider the first worldCoord, larger selection-claims will automatically "bubble" anyways.
+			int numAdjacent = numAdjacentTownOwnedTownBlocks(town, wc);
+			// The number of adjacement TBs is not enough and there is not a nearby outpost.
+			if (numAdjacent < minAdjacentBlocks && numAdjacentOutposts(town, wc) == 0)
+				throw new TownyException(Translatable.of("msg_min_adjacent_blocks", minAdjacentBlocks, numAdjacent));
+		}
+
+		if(BukkitTools.isEventCancelled(new TownPreClaimEvent(town, wc.getTownBlockOrNull(), player, false, false)))
+			throw new TownyException(Translatable.of("msg_err_another_plugin_cancelled_takeover"));
+
+		Confirmation.runOnAccept(() -> Bukkit.getScheduler().runTask(plugin, new TownClaim(plugin, player, town, Arrays.asList(wc), false, true, false)))
+		.setCost(new ConfirmationTransaction(()->TownySettings.getTakeoverClaimPrice(), town.getAccount(), "Takeover Claim (" + wc.toString() + ") from " + wc.getTownOrNull().getName() + "."))
+		.sendTo(player);
+	}
+
 	public static void parseTownMergeCommand(Player player, String[] args) throws TownyException {
 		parseTownMergeCommand(player, args, getTownFromPlayerOrThrow(player), false);
 	}

@@ -7,6 +7,7 @@ import com.palmergames.bukkit.towny.TownySettings;
 import com.palmergames.bukkit.towny.TownyUniverse;
 import com.palmergames.bukkit.towny.confirmations.Confirmation;
 import com.palmergames.bukkit.towny.event.TownClaimEvent;
+import com.palmergames.bukkit.towny.event.town.TownUnclaimEvent;
 import com.palmergames.bukkit.towny.exceptions.AlreadyRegisteredException;
 import com.palmergames.bukkit.towny.exceptions.TownyException;
 import com.palmergames.bukkit.towny.object.Town;
@@ -168,10 +169,19 @@ public class TownClaim implements Runnable {
 
 	private void townClaim(WorldCoord worldCoord) throws TownyException {
 
-		if (TownyUniverse.getInstance().hasTownBlock(worldCoord))
+		if (!worldCoord.canBeStolen())
 			throw new AlreadyRegisteredException(Translatable.of("msg_already_claimed", worldCoord.getTownOrNull().getName()).forLocale(player));
-
-		TownBlock townBlock = new TownBlock(worldCoord);
+	
+		TownBlock townBlock = null;
+		if (!TownyUniverse.getInstance().hasTownBlock(worldCoord)) 
+			townBlock = new TownBlock(worldCoord);
+		else {
+			townBlock = worldCoord.getTownBlockOrNull();
+			// This townblock was already owned by a town but is being taken over using the
+			// overclaimed-towns-can-have-land-stolen feature. Fire an event for other
+			// plugins.
+			BukkitTools.fireEvent(new TownUnclaimEvent(worldCoord.getTownOrNull(), worldCoord));
+		}
 		townBlock.setTown(town);
 		townBlock.setType(townBlock.getType()); // Sets the plot permissions to mirror the towns.
 

@@ -1891,3 +1891,15 @@ msg_err_townblock_has_no_claimedat_data: "This townblock has no data on when it 
 
 #Shown when someone cannot afford something, to tell them what it costs.
 msg_err_you_need_x_to_pay: "You need %s to pay."
+
+#Message shown when taking over claims is disabled on a server.
+msg_err_taking_over_claims_is_not_enabled: "Taking over claims is not enabled on this server."
+
+#Messages shown when taking over a claim is not allowed because the town is not overclaimed.
+msg_err_this_townblock_cannot_be_taken_over: "This TownBlock cannot be taken over, the town it belongs to is not overclaimed."
+
+#Message shown when taking over a claim would also set the homeblock because the town has no claims.
+msg_err_you_cannot_make_this_your_homeblock: "You cannot make claim because it would make this TownBlock your homeblock, which is not allowed."
+
+#Message shown when taking over a claim is stopped by another plugin.
+msg_err_another_plugin_cancelled_takeover: "Another plugin has stopped your takeover of this land."

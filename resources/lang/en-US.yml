@@ -1903,3 +1903,6 @@ msg_err_you_cannot_make_this_your_homeblock: "You cannot make claim because it w
 
 #Message shown when taking over a claim is stopped by another plugin.
 msg_err_another_plugin_cancelled_takeover: "Another plugin has stopped your takeover of this land."
+
+#Confirmation shown when taking over a claim.
+confirmation_you_are_about_to_take_over_a_claim: "Are you sure you want to take over a claim belonging to %s for the cost: %s. Did you want to continue?"

@@ -3923,9 +3923,13 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 		if(BukkitTools.isEventCancelled(new TownPreClaimEvent(town, wc.getTownBlockOrNull(), player, false, false)))
 			throw new TownyException(Translatable.of("msg_err_another_plugin_cancelled_takeover"));
 
+		double cost = TownySettings.getTakeoverClaimPrice();
+		String costSlug = !TownyEconomyHandler.isActive() || cost <= 0 ? Translatable.of("msg_spawn_cost_free").forLocale(player) : TownyEconomyHandler.getFormattedBalance(cost);
+		String townName = wc.getTownOrNull().getName();
 		Confirmation.runOnAccept(() -> Bukkit.getScheduler().runTask(plugin, new TownClaim(plugin, player, town, Arrays.asList(wc), false, true, false)))
-		.setCost(new ConfirmationTransaction(()->TownySettings.getTakeoverClaimPrice(), town.getAccount(), "Takeover Claim (" + wc.toString() + ") from " + wc.getTownOrNull().getName() + "."))
-		.sendTo(player);
+			.setTitle(Translatable.of("confirmation_you_are_about_to_take_over_a_claim", townName, costSlug))
+			.setCost(new ConfirmationTransaction(() -> cost, town.getAccount(), "Takeover Claim (" + wc.toString() + ") from " + townName + "."))
+			.sendTo(player);
 	}
 
 	public static void parseTownMergeCommand(Player player, String[] args) throws TownyException {

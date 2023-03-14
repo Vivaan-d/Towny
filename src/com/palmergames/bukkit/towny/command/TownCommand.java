@@ -3892,8 +3892,7 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 		if (succumbingTown.getName().equals(remainingTown.getName()))
 			throw new TownyException(Translatable.of("msg_err_invalid_name", args[0]));
 
-		if (TownySettings.getMaxDistanceForTownMerge() > 0 && homeBlockDistance(remainingTown, succumbingTown) > TownySettings.getMaxDistanceForTownMerge())
-			throw new TownyException(Translatable.of("msg_town_merge_err_not_close", succumbingTown.getName(), TownySettings.getMaxDistanceForTownMerge()));
+			// no i don't want this stupid trash | VivaanMC
 
 		int newResidentsAmount = remainingTown.getNumResidents() + succumbingTown.getNumResidents();
 

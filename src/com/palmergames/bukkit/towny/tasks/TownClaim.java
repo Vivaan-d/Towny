@@ -12,6 +12,7 @@ import com.palmergames.bukkit.towny.exceptions.AlreadyRegisteredException;
 import com.palmergames.bukkit.towny.exceptions.TownyException;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.object.TownBlockType;
 import com.palmergames.bukkit.towny.object.Translatable;
 import com.palmergames.bukkit.towny.object.WorldCoord;
 import com.palmergames.bukkit.towny.regen.PlotBlockData;
@@ -183,20 +184,20 @@ public class TownClaim implements Runnable {
 			//  Fire an event for other plugins.
 			BukkitTools.fireEvent(new TownUnclaimEvent(oldTown, worldCoord));
 
-			if (townBlock.isOutpost()) {
-				townBlock.setOutpost(false);
-				oldTown.removeOutpostSpawn(worldCoord);
-			}
-
 			if (townBlock.hasResident())
 				townBlock.setResident(null, false);
 
 			oldTown.save();
+			// Many other things are going to be handled by the townBlock.setTown(town) below, including:
+			// - Removing the outpost if it exists.
+			// - Removing the oldTown's homeblock.
+			// - Removing the town's jail if it is.
+			// - Removing the oldTown's nation spawn point.
+			// - Updating the oldTown's TownBlockTypeCache.
 		}
 
 		townBlock.setTown(town);
-		townBlock.setType(townBlock.getType()); // Sets the plot permissions to mirror the towns.
-
+		townBlock.setType(!alreadyClaimed ? townBlock.getType() : TownBlockType.RESIDENTIAL); // Sets the plot permissions to mirror the towns.
 		if (outpost) {
 			townBlock.setOutpost(true);
 			town.addOutpostSpawn(outpostLocation);

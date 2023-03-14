@@ -168,20 +168,32 @@ public class TownClaim implements Runnable {
 	}
 
 	private void townClaim(WorldCoord worldCoord) throws TownyException {
+		boolean alreadyClaimed = worldCoord.hasTownBlock();
 
-		if (!worldCoord.canBeStolen())
+		if ((alreadyClaimed && !TownySettings.isOverClaimingAllowingStolenLand()) || !worldCoord.canBeStolen())
 			throw new AlreadyRegisteredException(Translatable.of("msg_already_claimed", worldCoord.getTownOrNull().getName()).forLocale(player));
-	
-		TownBlock townBlock = null;
-		if (!TownyUniverse.getInstance().hasTownBlock(worldCoord)) 
-			townBlock = new TownBlock(worldCoord);
-		else {
-			townBlock = worldCoord.getTownBlockOrNull();
-			// This townblock was already owned by a town but is being taken over using the
-			// overclaimed-towns-can-have-land-stolen feature. Fire an event for other
-			// plugins.
-			BukkitTools.fireEvent(new TownUnclaimEvent(worldCoord.getTownOrNull(), worldCoord));
+
+		TownBlock townBlock = !alreadyClaimed ? new TownBlock(worldCoord) : worldCoord.getTownBlockOrNull();
+
+		// If this is an occaision where a town is stealing this land, do the
+		// prep to clean the old town from the townblock.
+		if (alreadyClaimed) {
+			Town oldTown = worldCoord.getTownOrNull();
+
+			//  Fire an event for other plugins.
+			BukkitTools.fireEvent(new TownUnclaimEvent(oldTown, worldCoord));
+
+			if (townBlock.isOutpost()) {
+				townBlock.setOutpost(false);
+				oldTown.removeOutpostSpawn(worldCoord);
+			}
+
+			if (townBlock.hasResident())
+				townBlock.setResident(null, false);
+
+			oldTown.save();
 		}
+
 		townBlock.setTown(town);
 		townBlock.setType(townBlock.getType()); // Sets the plot permissions to mirror the towns.
 
@@ -191,10 +203,11 @@ public class TownClaim implements Runnable {
 			outpost = false; // Reset so we only flag the first plot as an outpost.
 		}
 
-		// Claiming land can influence the Revert on Unclaim feature.
-		handleRevertOnUnclaimPossiblities(worldCoord, townBlock);
+		if (!alreadyClaimed)
+			// Claiming land can influence the Revert on Unclaim feature.
+			handleRevertOnUnclaimPossiblities(worldCoord, townBlock);
 
-		// Save our new TownBlock in the DB.
+		// Save the TownBlock in the DB.
 		townBlock.save();
 
 		// Raise an event for the claim

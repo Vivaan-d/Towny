@@ -3900,9 +3900,8 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 			newResidentsAmount > TownySettings.getMaxResidentsForTown(remainingTown))
 			throw new TownyException(Translatable.of("msg_town_merge_err_too_many_residents", TownySettings.getMaxResidentsForTown(remainingTown)));
 
-		if (!remainingTown.hasUnlimitedClaims() && 
-			(remainingTown.getNumTownBlocks() + succumbingTown.getNumTownBlocks()) > TownySettings.getMaxTownBlocks(remainingTown, newResidentsAmount))
-			throw new TownyException(Translatable.of("msg_town_merge_err_too_many_townblocks", TownySettings.getMaxTownBlocks(remainingTown, newResidentsAmount)));
+		// no i don't want this stupid trash (2) | VivaanMC
+
 
 		if ((remainingTown.getPurchasedBlocks() + succumbingTown.getPurchasedBlocks()) > TownySettings.getMaxPurchasedBlocks(remainingTown, newResidentsAmount))
 			throw new TownyException(Translatable.of("msg_town_merge_err_too_many_purchased_townblocks", TownySettings.getMaxPurchasedBlocks(remainingTown, newResidentsAmount)));

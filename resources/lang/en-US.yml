@@ -1906,3 +1906,9 @@ msg_err_another_plugin_cancelled_takeover: "Another plugin has stopped your take
 
 #Confirmation shown when taking over a claim.
 confirmation_you_are_about_to_take_over_a_claim: "Are you sure you want to take over a claim belonging to %s for the cost: %s. Did you want to continue?"
+
+#Warning message shown when a town is beginning to claim close to their limit, and the takeoverclaim feature is active.
+msg_warning_you_are_almost_out_of_townblocks: "Warning: You have nearly used up your available townblocks for claiming. If you lose a resident you will be at risk of your town being able to have townblocks stolen by other towns."
+
+#Warning message shown on login when a town is overclaimed and at risk of falling victim to the takeoverclaim feature.
+msg_warning_your_town_is_overclaimed: "Warning: Your town is overclaimed. While you have too many townblocks claimed, it will be possible to other towns to takeover plots of your town, consider unclaiming some land."

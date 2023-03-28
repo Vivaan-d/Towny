@@ -3693,10 +3693,8 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 			if (selection.isEmpty())
 				throw new TownyException(Translatable.of("msg_err_empty_area_selection"));
 		}
-
-		// Not enough available claims.
-		if (!town.hasUnlimitedClaims() && selection.size() > town.availableTownBlocks())
-			throw new TownyException(Translatable.of("msg_err_not_enough_blocks"));
+		
+		// omg more stupid stuff | VivaanMC
 
 		// If this is a single claim and it is already claimed, by someone else.
 		if (selection.size() == 1 && selection.get(0).getTownOrNull() != null)
@@ -3731,8 +3729,7 @@ public class TownCommand extends BaseCommand implements CommandExecutor {
 		TownyMessaging.sendDebugMsg("townClaim: Post-Filter Selection ["+selection.size()+"] " + Arrays.toString(selection.toArray(new WorldCoord[0])));
 		
 		// When not claiming an outpost, make sure at least one of the selection is attached to a claimed plot.
-		if (!outpost && !isEdgeBlock(town, selection) && !town.getTownBlocks().isEmpty())
-			throw new TownyException(Translatable.of("msg_err_not_attached_edge"));
+		// nah I don't want it | VivaanMC
 						
 		/*
 		 * Allow other plugins to have a say in whether the claim is allowed.
